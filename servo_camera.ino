@@ -83,7 +83,7 @@ void loop() {
       Serial.println("OK: Filter ON");
 
     } else if (command == "FILTER,OFF") {
-      myservo.write(180);  // Filter away
+      myservo.write(130);  // Filter away
       Serial.println("OK: Filter OFF");
 
     } else {
