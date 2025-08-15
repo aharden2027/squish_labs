@@ -113,7 +113,7 @@ if runParticleID
     fprintf('Preserve Particle ID finished\n');
 end
 
-if runCD2
+if runContactDetect
     fprintf("\n")
     contactDetect_updated(fileParams, cdParams, true);
     fprintf('Contact Detect finished\n');
@@ -132,3 +132,4 @@ if runDiscSolve
 end
 
 fprintf('Process Complete!\n');
+
