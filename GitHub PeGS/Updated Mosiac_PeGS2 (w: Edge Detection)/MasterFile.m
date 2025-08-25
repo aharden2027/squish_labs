@@ -67,7 +67,7 @@ cdParams.CR                   = 10;         % contact radius margin (px)
 cdParams.imadjust_limits      = [0 0.65];   % contrast stretch for green ch.
 cdParams.rednormal            = 2;          % red‑leak subtraction factor
 cdParams.figverbose           = true;       % show figures & save JPGs
-cdParams.packing              = 'particle'; % 'rectangle' or 'particle'
+cdParams.boundaryType         = 'particle'; % 'rectangle' or 'particle'
 
 
 %% disc solve Parameters
@@ -132,5 +132,6 @@ if runDiscSolve
 end
 
 fprintf('Process Complete!\n');
+
 
 
