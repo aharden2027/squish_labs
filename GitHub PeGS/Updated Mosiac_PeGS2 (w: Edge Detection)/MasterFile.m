@@ -42,7 +42,7 @@ pdParams.tol                = 50;
 pdParams.filter             = true;
 pdParams.showFigures        = true;
 pdParams.clean              = true;
-pdParams.packing            = 'particle';
+pdParams.boundaryType       = 'particle';
 
 
 %% canny_auto Parameters
@@ -132,4 +132,5 @@ if runDiscSolve
 end
 
 fprintf('Process Complete!\n');
+
 
