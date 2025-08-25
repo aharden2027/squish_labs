@@ -9,13 +9,15 @@
 % Description:
 %   Iterates through a set of images (e.g., 'piece_row_col.png') and performs particle
 %   detection using imfindcircles. Overlapping detections can be suppressed, edge-touching
-%   particles can be removed, and in "particle" packing mode, edges are detected by
+%   particles can be removed, and in "particle" boundaryType mode, edges are detected by
 %   identifying nearby black particles and computing their contact angles.
 %
-%   Supports two packing modes:
+%   Supports three boundaryType modes:
 %       - 'particle' : Detects red particles, finds adjacent black particles,
 %                      assigns edge flags, and stores contact angles.
-%       - 'rectangle': Detects particles and classifies edges by image boundaries only.
+%       - 'image': Detects particles and classifies edges by image boundaries only.
+%       - 'rectangle': Detects particles and classifies edges by the
+%                      outermost detected particles
 %
 % INPUTS:
 %   fileParams - Struct containing:
@@ -34,7 +36,7 @@
 %       .filter            : Logical flag to enable overlap filtering
 %       .clean             : Logical flag to remove edge-touching particles
 %       .dtol              : Distance tolerance for image-edge classification
-%       .packing           : 'particle' or 'rectangle' mode
+%       .boundaryType      : 'particle' or 'image' or 'rectangle' mode
 %
 %   verbose - (Optional) Logical flag to enable detailed console output and
 %             save annotated visualizations in a 'visualizations' folder.
@@ -70,7 +72,7 @@
 %   pdParams.filter = true;
 %   pdParams.clean = true;
 %   pdParams.dtol = 10;
-%   pdParams.packing = 'particle';
+%   pdParams.boundaryType = 'particle';
 %   particleDetect(fileParams, pdParams, true);
 %
 % Authors: [Vir Goyal, Arno Harden, Ashe Tanemura]
@@ -158,7 +160,7 @@ function particleDetect(fileParams, pdParams, verbose)
         end 
     
         % Initialize black particle detection
-        if  ~isempty(centers) && isfield(pdParams, 'packing') && strcmp(pdParams.packing, 'particle') 
+        if  ~isempty(centers) && isfield(pdParams, 'boundaryType ') && strcmp(pdParams.boundaryType, 'particle') 
 
             if verbose
                 fprintf("  Black particle detection...\n")
@@ -215,10 +217,10 @@ function particleDetect(fileParams, pdParams, verbose)
             hold on;
         end
         
-        %% Particle Edge Detection
-        if isfield(pdParams, 'packing') && strcmp(pdParams.packing, 'particle')
+        %classify edge detecton based on touching black particles
+        if ~isempty(centers) && strcmp(pdParams.boundaryType, 'particle')
             if verbose
-                fprintf("  Detecting Particle Edges...\n")
+                fprintf("  Detecting Particle Edges (particle)...\n")
             end
 
             contactBuffer = 20;
@@ -260,8 +262,12 @@ function particleDetect(fileParams, pdParams, verbose)
                     'Color', 'red', 'FontSize', 14, 'BackgroundColor', 'black');
          end
    
+        %classify edge particles based on image boundaries
+        if ~isempty(centers) && strcmp(pdParams.boundaryType, 'image')
+            if verbose
+                fprintf("  Detecting Particle Edges (image)...\n")
+            end
 
-        if ~isempty(centers) && ~isfield(pdParams, "packing") || strcmp(pdParams.packing, 'rectangle') 
             % Extract image dimensions
             [imgHeight, imgWidth] = size(red);
             dtol = pdParams.dtol;  % Edge buffer distance in pixels
@@ -280,8 +286,30 @@ function particleDetect(fileParams, pdParams, verbose)
             edges(bwi) = -2;   % bottom
         end
 
+        %classify edge particles (original)
+        if ~isempty(centers) && pdParams.boundaryType == "rectangle"  
+            if verbose
+                fprintf("  Detecting Particle Edges (rectangle)...\n")
+            end
+            lpos = min(centers(:,1)-radii);
+            rpos = max(centers(:,1)+radii);
+            upos = max(centers(:,2)+radii);
+            bpos = min(centers(:,2)-radii);
+            lwi = centers(:,1)-radii <= lpos+pdParams.dtol;
+            rwi = centers(:,1)+radii >= rpos-pdParams.dtol;
+            uwi = centers(:,2)+radii >= upos-pdParams.dtol;
+            bwi = centers(:,2)-radii <= bpos+pdParams.dtol; %need to add edge case of corner particle
+
+            edges = zeros(length(radii), 1);
+            edges(rwi) = 1; %right
+            edges(lwi) = -1; %left
+            edges(uwi) = 2;  %"upper" - as vertical pixels are backwards from cartesian, actually bottom of image
+            edges(bwi) = -2; %"bottom" - see above comment
+            %interior particles are 0
+        end %for edge detection
+
         %% Saving ParticleData      
-        if isfield(pdParams, 'packing') && strcmp(pdParams.packing, 'particle')
+        if isfield(pdParams, 'boundaryType ') && strcmp(pdParams.boundaryType, 'particle')
             % ---- PARTICLE MODE: includes angles ----
             
             % Determine max number of angles
