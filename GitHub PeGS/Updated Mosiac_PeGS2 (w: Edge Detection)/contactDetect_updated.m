@@ -52,7 +52,7 @@
 % -`p.figverbose`: do you want to see the figures as you go?
 % 
 
-%% This is an updated contactDetect which allows for more accurate edge detection for the 'particle' packing. 
+%% This is an updated contactDetect which allows for more accurate edge detection for the 'particle' boundaryType. 
 % Changes include
 % - Different intialization of particle_positions.txt in order to store edgeAngles
 % - Additional particle field, edgeAngles, that is filled if edgeAngles are available otherwise the field is left empty
@@ -132,7 +132,7 @@ function out = contactDetect_updated(fileParams, cdParams, verbose)
             else
                frame = imgnumb;
             end
-            if isfield(cdParams, 'packing') && strcmp(cdParams.packing, 'particle')
+            if isfield(cdParams, 'boundaryType') && strcmp(cdParams.boundaryType, 'particle')
                 pData = centersfile(centersfile(:,1)==frame,3:end);
                 id = centersfile(centersfile(:,1) == frame, 2);
             else
@@ -158,7 +158,7 @@ function out = contactDetect_updated(fileParams, cdParams, verbose)
                 particle(n).y = pData(n,2);
                 particle(n).r = round(pData(n,3));
                 particle(n).edge = pData(n, 4);
-                if isfield(cdParams, 'packing') && strcmp(cdParams.packing, 'particle') && particle(n).edge ~= 0
+                if isfield(cdParams, 'boundaryType') && strcmp(cdParams.boundaryType, 'particle') && particle(n).edge ~= 0
                     particle(n).edgeAngles = pData(n, 5:end); %saves all the edgeAngles
                     particle(n).edgeAngles = particle(n).edgeAngles(~isnan(particle(n).edgeAngles)); %removes all the NaN
                 else
@@ -275,7 +275,7 @@ function out = contactDetect_updated(fileParams, cdParams, verbose)
     
             circs = [[particle.y]', [particle.x]', [particle.r]', [particle.edge]']; %Makes a circs matrix from old matrices
             
-            %if particle packing saves the edgeAnglesList
+            %if particle boundaryType saves the edgeAnglesList
             if isfield(particle, 'edgeAngles')
                 edgeAnglesList = {particle.edgeAngles}; 
             end
