@@ -3,4 +3,4 @@ for Pegs place all of the main files in single folder that includes a testdata f
 file
   - PeGS function
   - testdata
-  -   images
+      - images
